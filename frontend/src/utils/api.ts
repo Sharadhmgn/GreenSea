@@ -1,14 +1,14 @@
 import axios from 'axios';
 // Define base API URL - adjust based on your deployment environment
-// const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://greensea-production-2a5a.up.railway.app/api';
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
   // Include credentials (cookies) with requests
-  withCredentials: false  // Set to false since we're using token-based auth
+  withCredentials: true  // Set to true for cross-origin requests with credentials
 });
 
 // Request interceptor - add auth token to requests
