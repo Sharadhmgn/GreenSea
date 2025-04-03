@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
-import Header from './components/Header';
+import { ThemeProvider, createTheme, CssBaseline, Box, alpha } from '@mui/material';
+import NewHeader from './components/NewHeader';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
@@ -19,6 +19,9 @@ import OrdersManagement from './pages/admin/OrdersManagement';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AdminLayout from './layouts/AdminLayout';
+import GlobalStyles from './components/GlobalStyles';
+import PerformanceSwitch from './components/PerformanceSwitch';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -70,75 +73,88 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#2e7d32', // Green as primary color (from "Green" in logo)
-      light: '#4caf50',
-      dark: '#1b5e20',
+      main: '#356648', // Rich forest green
+      light: '#4a7a5a',
+      dark: '#265037',
       contrastText: '#fff',
     },
     secondary: {
-      main: '#1a5f7a', // Ocean blue (from fish in logo) as secondary
-      light: '#4a8ca6',
-      dark: '#003c52',
+      main: '#1a5f7a', // Deep ocean blue
+      light: '#2389b5',
+      dark: '#0d4d66',
       contrastText: '#fff',
     },
     success: {
-      main: '#4caf50', // Lighter green for success states
+      main: '#4caf50',
       light: '#81c784',
       dark: '#388e3c',
       contrastText: '#fff',
     },
     info: {
-      main: '#0288d1', // Blue for information
+      main: '#0288d1',
       light: '#03a9f4',
       dark: '#01579b',
       contrastText: '#fff',
     },
     warning: {
-      main: '#ff8a00', // Orange for warnings/promotions
+      main: '#ff8a00', // Warm orange
       light: '#ffbb4d',
       dark: '#c25e00',
       contrastText: '#fff',
     },
+    error: {
+      main: '#f44336',
+      light: '#e57373',
+      dark: '#d32f2f',
+      contrastText: '#fff',
+    },
     background: {
-      default: '#f8fff9', // Very slight green tint to background
+      default: '#fcfcfa', // Soft cream background
       paper: '#FFFFFF',
     },
     text: {
-      primary: '#1e3a29', // Darker green-tinted text
-      secondary: '#546e7a', // Blue-gray secondary text
+      primary: '#333333', // Darker text for better readability
+      secondary: '#666666', // Medium gray for secondary text
     },
     divider: 'rgba(0, 0, 0, 0.08)',
   },
   typography: {
     fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
-      fontWeight: 700,
-      fontSize: '2.5rem',
+      fontWeight: 800,
+      fontSize: '3.5rem',
       letterSpacing: '-0.02em',
-      color: '#2e7d32', // Green headings
+      color: '#333333',
+      lineHeight: 1.2,
     },
     h2: {
       fontWeight: 700,
-      fontSize: '2rem',
+      fontSize: '2.75rem',
       letterSpacing: '-0.01em',
-      color: '#2e7d32', // Green headings
+      color: '#333333',
+      lineHeight: 1.3,
     },
     h3: {
-      fontWeight: 600,
-      fontSize: '1.75rem',
-      color: '#2e7d32', // Green headings
+      fontWeight: 700,
+      fontSize: '2.25rem',
+      color: '#333333',
+      lineHeight: 1.3,
     },
     h4: {
       fontWeight: 600,
-      fontSize: '1.5rem',
+      fontSize: '1.75rem',
+      color: '#333333',
+      lineHeight: 1.4,
     },
     h5: {
-      fontWeight: 500,
+      fontWeight: 600,
       fontSize: '1.25rem',
+      color: '#333333',
     },
     h6: {
-      fontWeight: 500,
+      fontWeight: 600,
       fontSize: '1rem',
+      color: '#333333',
     },
     body1: {
       fontSize: '1rem',
@@ -157,6 +173,12 @@ const theme = createTheme({
       fontSize: '0.75rem',
       letterSpacing: '0.5px',
     },
+    overline: {
+      fontSize: '0.75rem',
+      fontWeight: 500,
+      letterSpacing: '1.5px',
+      textTransform: 'uppercase',
+    },
   },
   shape: {
     borderRadius: 12,
@@ -165,24 +187,31 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          padding: '8px 24px',
+          borderRadius: 25, // Rounded buttons like Four Sigmatic
+          padding: '10px 24px',
           boxShadow: 'none',
+          fontWeight: 600,
+          transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           '&:hover': {
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+            transform: 'translateY(-3px)',
+            boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.1)',
           },
         },
         contained: {
           '&:hover': {
-            boxShadow: '0px 6px 16px rgba(0, 0, 0, 0.12)',
+            boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.15)',
           },
+        },
+        sizeLarge: {
+          padding: '12px 32px',
+          fontSize: '1rem',
         },
       },
       variants: [
         {
           props: { variant: 'contained', color: 'primary' },
           style: {
-            background: 'linear-gradient(45deg, #2e7d32 30%, #43a047 90%)',
+            background: 'linear-gradient(45deg, #356648 30%, #4a7a5a 90%)',
           },
         },
         {
@@ -198,12 +227,23 @@ const theme = createTheme({
         root: {
           borderRadius: 16,
           boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
-          transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+          transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          border: 'none',
+          overflow: 'hidden',
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.08)',
+            transform: 'translateY(-10px)',
+            boxShadow: '0px 15px 30px rgba(0, 0, 0, 0.1)',
           },
-          borderLeft: '4px solid #2e7d32', // Green accent border
+        },
+      },
+    },
+    MuiCardMedia: {
+      styleOverrides: {
+        root: {
+          transition: 'transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          '&:hover': {
+            transform: 'scale(1.05)',
+          },
         },
       },
     },
@@ -211,9 +251,10 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           boxShadow: '0px 2px 12px rgba(0, 0, 0, 0.05)',
-          backdropFilter: 'blur(8px)',
-          backgroundColor: 'rgba(255, 255, 255, 0.85)',
-          borderBottom: '1px solid rgba(46, 125, 50, 0.1)', // Subtle green border
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(53, 102, 72, 0.1)', // Subtle green border
+          color: '#333333',
         },
       },
     },
@@ -221,84 +262,118 @@ const theme = createTheme({
       styleOverrides: {
         paper: {
           backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(8px)',
-          borderRight: '1px solid rgba(46, 125, 50, 0.1)', // Subtle green border
+          backdropFilter: 'blur(10px)',
         },
       },
     },
-    MuiMenu: {
-      styleOverrides: {
-        paper: {
-          borderRadius: 12,
-          boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)',
-          borderTop: '3px solid #2e7d32', // Green accent
-        },
-      },
-    },
-    MuiMenuItem: {
+    MuiTextField: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          margin: '4px 8px',
-          '&:hover': {
-            backgroundColor: 'rgba(46, 125, 50, 0.08)', // Light green hover
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 8,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(53, 102, 72, 0.5)',
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderWidth: 2,
+            },
           },
         },
       },
     },
-    MuiBadge: {
+    MuiAlert: {
       styleOverrides: {
-        badge: {
+        root: {
           borderRadius: 8,
-          padding: '0 6px',
-          minWidth: 20,
-          height: 20,
-          fontSize: '0.75rem',
-          fontWeight: 600,
         },
       },
     },
-    MuiAvatar: {
+    MuiChip: {
       styleOverrides: {
         root: {
-          boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-          border: '2px solid #2e7d32', // Green border for avatars
+          borderRadius: 8,
+          fontWeight: 500,
         },
       },
     },
-    MuiDivider: {
+    MuiPagination: {
       styleOverrides: {
         root: {
-          borderColor: 'rgba(46, 125, 50, 0.1)', // Light green dividers
-        },
-      },
-    },
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          '&:hover': {
-            backgroundColor: 'rgba(46, 125, 50, 0.08)', // Light green hover
+          '& .MuiPaginationItem-root': {
+            borderRadius: 8,
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              backgroundColor: 'rgba(53, 102, 72, 0.1)',
+            },
+            '&.Mui-selected': {
+              fontWeight: 600,
+            },
           },
+        },
+      },
+    },
+    MuiLink: {
+      defaultProps: {
+        underline: 'hover',
+      },
+      styleOverrides: {
+        root: {
+          transition: 'color 0.2s ease-in-out',
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
         },
       },
     },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: '#2e7d32', // Green focused border
-            borderWidth: 2,
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiAccordion: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          '&:before': {
+            display: 'none',
           },
         },
       },
     },
-    MuiLink: {
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 16,
+          boxShadow: '0px 20px 60px rgba(0, 0, 0, 0.1)',
+        },
+      },
+    },
+    MuiContainer: {
       styleOverrides: {
         root: {
-          color: '#2e7d32', // Green links
-          '&:hover': {
-            color: '#1b5e20',
+          paddingLeft: 24,
+          paddingRight: 24,
+          '@media (min-width: 600px)': {
+            paddingLeft: 32,
+            paddingRight: 32,
           },
+        },
+      },
+    },
+    MuiPaper: {
+      defaultProps: {
+        elevation: 0,
+      },
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
         },
       },
     },
@@ -307,9 +382,20 @@ const theme = createTheme({
 
 // Main App component
 const App = () => {
+  const [reduceAnimations, setReduceAnimations] = useState(() => {
+    // Get saved preference from localStorage
+    const saved = localStorage.getItem('performanceMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  const handlePerformanceModeChange = (isPerformanceMode: boolean) => {
+    setReduceAnimations(isPerformanceMode);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <GlobalStyles enableCustomCursor={false} reduceAnimations={reduceAnimations} />
       <AuthProvider>
         <CartProvider>
           <Router>
@@ -335,8 +421,16 @@ const App = () => {
               <Route 
                 element={
                   <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-                    <Header />
-                    <Box component="main" sx={{ flexGrow: 1, pt: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+                    <NewHeader />
+                    <Box 
+                      component="main" 
+                      sx={{ 
+                        flexGrow: 1, 
+                        pt: { xs: 0, md: 0 }, 
+                        pb: { xs: 0, md: 0 },
+                        position: 'relative'
+                      }}
+                    >
                       <Outlet />
                     </Box>
                     <Footer />
@@ -349,6 +443,7 @@ const App = () => {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/best-sellers" element={<BestSellersPage />} />
                 <Route path="/about-us" element={<AboutUsPage />} />
                 
@@ -374,6 +469,7 @@ const App = () => {
                 <Route path="*" element={<div>Page Not Found</div>} />
               </Route>
             </Routes>
+            <PerformanceSwitch onChange={handlePerformanceModeChange} />
           </Router>
         </CartProvider>
       </AuthProvider>

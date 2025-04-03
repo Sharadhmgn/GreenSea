@@ -34,6 +34,7 @@ import {
   Inventory as InventoryIcon,
   Category as CategoryIcon,
   ShoppingCart as ShoppingCartIcon,
+  People as PeopleIcon,
 } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -112,6 +113,7 @@ const Header = () => {
     { name: 'Products', path: '/admin/products', icon: <InventoryIcon fontSize="small" /> },
     { name: 'Categories', path: '/admin/categories', icon: <CategoryIcon fontSize="small" /> },
     { name: 'Orders', path: '/admin/orders', icon: <ShoppingCartIcon fontSize="small" /> },
+    { name: 'Users', path: '/admin/users', icon: <PeopleIcon fontSize="small" /> },
   ];
   
   // Choose which navigation items to display
@@ -121,17 +123,26 @@ const Header = () => {
   const visibleNavItems = isTablet ? displayNavItems.slice(0, 3) : displayNavItems;
   
   const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
+    <Box sx={{ textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, borderBottom: '1px solid rgba(0, 0, 0, 0.05)' }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <Logo height={40} />
         </Box>
-        <IconButton edge="end" color="inherit" aria-label="close">
+        <IconButton 
+          edge="end" 
+          color="inherit" 
+          aria-label="close" 
+          onClick={handleDrawerToggle}
+          sx={{ 
+            bgcolor: 'rgba(53, 102, 72, 0.08)',
+            '&:hover': { bgcolor: 'rgba(53, 102, 72, 0.15)' }
+          }}
+        >
           <CloseIcon />
         </IconButton>
       </Box>
-      <Divider />
-      <List>
+      
+      <List sx={{ flex: 1, p: 0 }}>
         {isAdminPage ? (
           // Admin navigation in drawer
           adminNavItems.map((item) => (
@@ -139,17 +150,20 @@ const Header = () => {
               key={item.name}
               component={RouterLink}
               to={item.path}
+              onClick={handleDrawerToggle}
               sx={{
+                py: 2,
+                px: 3,
                 textDecoration: 'none',
                 color: isActive(item.path) ? 'primary.main' : 'text.primary',
-                bgcolor: isActive(item.path) ? 'rgba(46, 125, 50, 0.08)' : 'transparent',
+                bgcolor: isActive(item.path) ? 'rgba(53, 102, 72, 0.08)' : 'transparent',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  bgcolor: 'rgba(46, 125, 50, 0.08)',
+                  bgcolor: 'rgba(53, 102, 72, 0.05)',
                 },
               }}
             >
-              <ListItemIcon>
+              <ListItemIcon sx={{ color: isActive(item.path) ? 'primary.main' : 'text.secondary' }}>
                 {item.icon}
               </ListItemIcon>
               <ListItemText 
@@ -170,13 +184,18 @@ const Header = () => {
               key={item.name}
               component={RouterLink}
               to={item.path}
+              onClick={handleDrawerToggle}
               sx={{
+                py: 2,
+                px: 3,
                 textDecoration: 'none',
                 color: isActive(item.path) ? 'primary.main' : 'text.primary',
-                bgcolor: isActive(item.path) ? 'rgba(46, 125, 50, 0.08)' : 'transparent',
+                bgcolor: isActive(item.path) ? 'rgba(53, 102, 72, 0.08)' : 'transparent',
                 transition: 'all 0.3s ease',
+                borderLeft: isActive(item.path) ? '4px solid' : '4px solid transparent',
+                borderLeftColor: isActive(item.path) ? 'primary.main' : 'transparent',
                 '&:hover': {
-                  bgcolor: 'rgba(46, 125, 50, 0.08)',
+                  bgcolor: 'rgba(53, 102, 72, 0.05)',
                 },
               }}
             >
@@ -184,7 +203,7 @@ const Header = () => {
                 primary={item.name}
                 primaryTypographyProps={{
                   sx: {
-                    fontWeight: isActive(item.path) ? 600 : 400,
+                    fontWeight: isActive(item.path) ? 600 : 500,
                     letterSpacing: '0.5px',
                   }
                 }}
@@ -192,441 +211,391 @@ const Header = () => {
             </ListItem>
           ))
         )}
-        
-        <Divider sx={{ my: 1 }} />
+      </List>
+      
+      <Divider sx={{ my: 1 }} />
+      
+      <Box sx={{ p: 3 }}>
         {!isAuthenticated ? (
-          <>
-            <ListItem component={RouterLink} to="/login" sx={{ textDecoration: 'none', color: 'text.primary' }}>
-              <ListItemText primary="Sign In" />
-            </ListItem>
-            <ListItem component={RouterLink} to="/register" sx={{ textDecoration: 'none', color: 'text.primary' }}>
-              <ListItemText primary="Create Account" />
-            </ListItem>
-          </>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Button 
+              component={RouterLink} 
+              to="/login" 
+              variant="contained" 
+              color="primary" 
+              fullWidth
+              onClick={handleDrawerToggle}
+              sx={{ borderRadius: 50 }}
+            >
+              Sign In
+            </Button>
+            <Button 
+              component={RouterLink} 
+              to="/register" 
+              variant="outlined" 
+              color="primary" 
+              fullWidth
+              onClick={handleDrawerToggle}
+              sx={{ borderRadius: 50 }}
+            >
+              Create Account
+            </Button>
+          </Box>
         ) : (
-          <>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {!isAdminPage && (
               <>
-                <ListItem component={RouterLink} to="/profile" sx={{ textDecoration: 'none', color: 'text.primary' }}>
-                  <ListItemText primary="My Account" />
-                </ListItem>
-                <ListItem component={RouterLink} to="/orders" sx={{ textDecoration: 'none', color: 'text.primary' }}>
-                  <ListItemText primary="My Orders" />
-                </ListItem>
+                <Button
+                  component={RouterLink}
+                  to="/profile"
+                  variant="outlined"
+                  color="primary"
+                  fullWidth
+                  onClick={handleDrawerToggle}
+                  sx={{ borderRadius: 50 }}
+                >
+                  My Account
+                </Button>
+                
+                <Button
+                  component={RouterLink}
+                  to="/orders"
+                  variant="outlined"
+                  color="primary"
+                  fullWidth
+                  onClick={handleDrawerToggle}
+                  sx={{ borderRadius: 50 }}
+                >
+                  My Orders
+                </Button>
               </>
             )}
             
-            <ListItem button onClick={logout} sx={{ textDecoration: 'none', color: 'text.primary' }}>
-              <ListItemText primary="Sign Out" />
-            </ListItem>
+            <Button 
+              onClick={() => {
+                handleDrawerToggle();
+                logout();
+              }} 
+              variant="contained" 
+              color="primary"
+              fullWidth
+              sx={{ borderRadius: 50 }}
+            >
+              Sign Out
+            </Button>
             
             {user?.isAdmin && !isAdminPage && (
-              <>
-                <Divider />
-                <ListItem component={RouterLink} to="/admin" sx={{ textDecoration: 'none', color: 'text.primary' }}>
-                  <ListItemIcon>
-                    <DashboardIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary="Admin Dashboard" />
-                </ListItem>
-              </>
+              <Button
+                component={RouterLink}
+                to="/admin"
+                variant="outlined"
+                color="secondary"
+                startIcon={<DashboardIcon />}
+                fullWidth
+                onClick={handleDrawerToggle}
+                sx={{ mt: 2, borderRadius: 50 }}
+              >
+                Admin Dashboard
+              </Button>
             )}
             
             {isAdminPage && (
-              <>
-                <Divider />
-                <ListItem component={RouterLink} to="/" sx={{ textDecoration: 'none', color: 'text.primary' }}>
-                  <ListItemText primary="Back to Store" />
-                </ListItem>
-              </>
+              <Button
+                component={RouterLink}
+                to="/"
+                variant="outlined"
+                color="primary"
+                fullWidth
+                onClick={handleDrawerToggle}
+                sx={{ mt: 2, borderRadius: 50 }}
+              >
+                Back to Store
+              </Button>
             )}
-          </>
+          </Box>
         )}
-      </List>
+      </Box>
     </Box>
   );
   
   return (
     <AppBar 
       position="sticky" 
-      color="default" 
       elevation={scrolled ? 2 : 0}
       sx={{ 
-        bgcolor: 'background.paper',
-        borderBottom: scrolled ? 'none' : '1px solid',
-        borderColor: 'divider',
-        backdropFilter: 'blur(8px)',
-        backgroundColor: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.85)',
+        bgcolor: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+        backdropFilter: 'blur(10px)',
         transition: 'all 0.3s ease',
+        color: 'text.primary',
+        borderBottom: scrolled ? '1px solid rgba(0, 0, 0, 0.05)' : 'none',
       }}
     >
       <Container maxWidth="xl">
-        <Toolbar sx={{ 
-          px: { xs: 0 }, 
-          py: scrolled ? 0.5 : 1,
-          transition: 'all 0.3s ease',
-          justifyContent: 'space-between' 
-        }}>
-          {/* Logo with conditional link */}
-          <RouterLink to={isAdminPage ? "/admin" : "/"} style={{ textDecoration: 'none', display: 'flex' }}>
-            <Logo height={scrolled ? (isMobile ? 35 : 40) : (isMobile ? 40 : 50)} />
-            {isAdminPage && (
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  ml: 1, 
-                  fontWeight: 600, 
-                  color: 'primary.main',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-              >
-                Admin
-              </Typography>
-            )}
-          </RouterLink>
-
-          {/* Desktop Navigation */}
-          {!isMobile && (
-            <Box 
+        <Toolbar 
+          disableGutters 
+          sx={{ 
+            py: { xs: 1, sm: 1.5 },
+          }}
+        >
+          {/* Mobile menu toggle */}
+          {!isAdminPage && (
+            <IconButton
+              color="inherit"
+              aria-label="open menu"
+              edge="start"
+              onClick={handleDrawerToggle}
               sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                mx: 2,
-                flex: 1
+                mr: 2, 
+                display: { md: 'none' },
+                bgcolor: 'rgba(53, 102, 72, 0.08)',
+                '&:hover': { bgcolor: 'rgba(53, 102, 72, 0.15)' }
               }}
             >
-              {visibleNavItems.map((item, index) => (
-                <Fade in={true} key={item.name} timeout={500} style={{ transitionDelay: `${index * 100}ms` }}>
-                  <Button
-                    component={RouterLink}
-                    to={item.path}
-                    sx={{
-                      mx: { md: 1, lg: 2 },
-                      color: isActive(item.path) ? 'primary.main' : 'text.primary',
-                      fontWeight: isActive(item.path) ? 600 : 400,
-                      position: 'relative',
-                      letterSpacing: '0.5px',
-                      textTransform: 'none',
-                      fontSize: '0.9rem',
-                      ...(isAdminPage && {
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }),
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: -2,
-                        left: 0,
-                        right: 0,
-                        height: 2,
-                        bgcolor: 'primary.main',
-                        transform: isActive(item.path) ? 'scaleX(1)' : 'scaleX(0)',
-                        transformOrigin: 'right',
-                        transition: 'transform 0.3s ease',
-                      },
-                      '&:hover::after': {
-                        transform: 'scaleX(1)',
-                        transformOrigin: 'left',
-                      },
-                    }}
-                  >
-                    {isAdminPage && item.icon && (
-                      <Box component="span" sx={{ display: 'flex', alignItems: 'center', mr: 0.5 }}>
-                        {item.icon}
-                      </Box>
-                    )}
-                    {item.name}
-                  </Button>
-                </Fade>
-              ))}
-            </Box>
+              <MenuIcon />
+            </IconButton>
           )}
-
-          {/* Right side elements */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Only show these icons for regular users, not admin */}
-            {!isAdminPage && (
-              <>
-                {/* Search Icon */}
-                <IconButton
-                  color="primary"
-                  sx={{ 
-                    transition: 'transform 0.2s ease',
-                    '&:hover': {
-                      transform: 'scale(1.1)',
-                      backgroundColor: 'rgba(46, 125, 50, 0.08)',
-                    }
-                  }}
-                >
-                  <SearchIcon />
-                </IconButton>
-
-                {/* Wishlist Icon */}
-                <IconButton
-                  color="primary"
-                  sx={{ 
-                    transition: 'transform 0.2s ease',
-                    display: { xs: 'none', sm: 'flex' },
-                    '&:hover': {
-                      transform: 'scale(1.1)',
-                      backgroundColor: 'rgba(46, 125, 50, 0.08)',
-                    }
-                  }}
-                >
-                  <FavoriteIcon />
-                </IconButton>
-
-                {/* Cart Icon */}
-                <IconButton
-                  component={RouterLink}
-                  to="/cart"
-                  aria-label="shopping cart"
-                  color="primary"
-                  sx={{ 
-                    transition: 'transform 0.2s ease',
-                    '&:hover': {
-                      transform: 'scale(1.1)',
-                      backgroundColor: 'rgba(46, 125, 50, 0.08)',
-                    }
-                  }}
-                >
-                  <Badge 
-                    badgeContent={cartItemsCount} 
-                    color="warning"
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        right: -3,
-                        top: 13,
-                        border: `2px solid ${theme.palette.background.paper}`,
-                        padding: '0 4px',
-                      }
-                    }}
-                  >
-                    <CartIcon />
-                  </Badge>
-                </IconButton>
-              </>
-            )}
-
-            {/* Admin mode indicator */}
-            {isAdminPage && (
+          
+          {/* Logo */}
+          <Box 
+            component={RouterLink} 
+            to="/" 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              textDecoration: 'none',
+              color: 'inherit',
+              flexGrow: { xs: 1, md: 0 },
+              mr: { md: 4 }
+            }}
+          >
+            <Logo variant={isMobile ? 'compact' : 'full'} height={isMobile ? 40 : 45} />
+          </Box>
+          
+          {/* Desktop navigation links */}
+          <Box 
+            sx={{ 
+              flexGrow: 1, 
+              display: { xs: 'none', md: 'flex' },
+              justifyContent: isAdminPage ? 'flex-start' : 'center',
+              ml: isAdminPage ? 2 : 0,
+            }}
+          >
+            {displayNavItems.map((item) => (
               <Button
+                key={item.name}
                 component={RouterLink}
-                to="/"
-                variant="outlined"
-                size="small"
-                sx={{ mr: 1 }}
-              >
-                Back to Store
-              </Button>
-            )}
-
-            {/* User Menu */}
-            {!isMobile && (
-              <>
-                {isAuthenticated ? (
-                  <>
-                    <IconButton
-                      edge="end"
-                      aria-label="account of current user"
-                      aria-haspopup="true"
-                      onClick={handleProfileMenuOpen}
-                      color="inherit"
-                      sx={{ 
-                        ml: 1,
-                        transition: 'transform 0.2s ease',
-                        '&:hover': {
-                          transform: 'scale(1.1)',
-                          backgroundColor: 'rgba(46, 125, 50, 0.08)',
-                        }
-                      }}
-                    >
-                      {user?.avatar ? (
-                        <Avatar
-                          src={user.avatar}
-                          alt={user.name}
-                          sx={{ 
-                            width: 32, 
-                            height: 32,
-                            border: `2px solid ${theme.palette.primary.main}`,
-                          }}
-                        />
-                      ) : (
-                        <Avatar 
-                          sx={{ 
-                            width: 32, 
-                            height: 32, 
-                            bgcolor: 'primary.main',
-                            border: `2px solid ${theme.palette.primary.light}`,
-                          }}
-                        >
-                          {user?.name?.charAt(0) || 'U'}
-                        </Avatar>
-                      )}
-                    </IconButton>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={Boolean(anchorEl)}
-                      onClose={handleMenuClose}
-                      keepMounted
-                      TransitionComponent={Fade}
-                      TransitionProps={{ timeout: 200 }}
-                    >
-                      {/* Regular user menu items - only show on regular pages */}
-                      {!isAdminPage && (
-                        <>
-                          <MenuItem
-                            component={RouterLink}
-                            to="/profile"
-                            onClick={handleMenuClose}
-                            sx={{
-                              fontWeight: 500,
-                              letterSpacing: '0.5px',
-                            }}
-                          >
-                            My Account
-                          </MenuItem>
-                          <MenuItem
-                            component={RouterLink}
-                            to="/orders"
-                            onClick={handleMenuClose}
-                            sx={{
-                              fontWeight: 500,
-                              letterSpacing: '0.5px',
-                            }}
-                          >
-                            My Orders
-                          </MenuItem>
-                        </>
-                      )}
-                      
-                      {/* Admin section - only on regular pages and for admin users */}
-                      {user?.isAdmin && !isAdminPage && (
-                        <>
-                          <Divider />
-                          <MenuItem
-                            component={RouterLink}
-                            to="/admin"
-                            onClick={handleMenuClose}
-                            sx={{
-                              fontWeight: 500,
-                              letterSpacing: '0.5px',
-                            }}
-                          >
-                            <ListItemIcon>
-                              <DashboardIcon fontSize="small" />
-                            </ListItemIcon>
-                            Admin Dashboard
-                          </MenuItem>
-                        </>
-                      )}
-                      
-                      {/* Back to store - only on admin pages */}
-                      {isAdminPage && (
-                        <MenuItem
-                          component={RouterLink}
-                          to="/"
-                          onClick={handleMenuClose}
-                          sx={{
-                            fontWeight: 500,
-                            letterSpacing: '0.5px',
-                          }}
-                        >
-                          Back to Store
-                        </MenuItem>
-                      )}
-                      
-                      <Divider />
-                      <MenuItem 
-                        onClick={handleLogout}
-                        sx={{
-                          fontWeight: 500,
-                          letterSpacing: '0.5px',
-                          color: 'error.main',
-                        }}
-                      >
-                        Sign Out
-                      </MenuItem>
-                    </Menu>
-                  </>
-                ) : (
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                      color="inherit"
-                      component={RouterLink}
-                      to="/login"
-                      sx={{ 
-                        fontWeight: 500,
-                        letterSpacing: '0.5px',
-                        textTransform: 'none',
-                        display: { xs: 'none', sm: 'block' }
-                      }}
-                    >
-                      Sign In
-                    </Button>
-                    <Button
-                      component={RouterLink}
-                      to="/register"
-                      variant="contained"
-                      color="primary"
-                      sx={{ 
-                        fontWeight: 500,
-                        letterSpacing: '0.5px',
-                        textTransform: 'none',
-                        boxShadow: 'none',
-                        '&:hover': {
-                          boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
-                        }
-                      }}
-                    >
-                      Create Account
-                    </Button>
-                  </Box>
-                )}
-              </>
-            )}
-
-            {/* Mobile menu icon */}
-            {isMobile && (
-              <IconButton
-                edge="start"
-                color="primary"
-                aria-label="open drawer"
-                onClick={handleDrawerToggle}
-                sx={{ 
-                  ml: 1,
-                  transition: 'transform 0.2s ease',
+                to={item.path}
+                startIcon={isAdminPage ? item.icon : null}
+                sx={{
+                  position: 'relative',
+                  mx: { md: 0.5, lg: 1 },
+                  py: 1,
+                  px: { md: 1.5, lg: 2 },
+                  color: isActive(item.path) ? 'primary.main' : 'text.primary',
+                  fontWeight: isActive(item.path) ? 600 : 500,
                   '&:hover': {
-                    transform: 'scale(1.1)',
-                    backgroundColor: 'rgba(46, 125, 50, 0.08)',
-                  }
+                    bgcolor: 'rgba(53, 102, 72, 0.05)',
+                  },
+                  '&::after': isActive(item.path) ? {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '40%',
+                    height: '3px',
+                    bgcolor: 'primary.main',
+                    borderRadius: '2px',
+                  } : {},
                 }}
               >
-                <MenuIcon />
+                {item.name}
+              </Button>
+            ))}
+          </Box>
+          
+          {/* User and cart actions */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            ml: 'auto',
+          }}>
+            {/* If not admin page, show cart button */}
+            {!isAdminPage && (
+              <IconButton 
+                color="inherit" 
+                component={RouterLink} 
+                to="/cart"
+                sx={{
+                  ml: { xs: 1, sm: 2 },
+                  bgcolor: isActive('/cart') ? 'rgba(53, 102, 72, 0.08)' : 'transparent',
+                  '&:hover': { bgcolor: 'rgba(53, 102, 72, 0.08)' },
+                }}
+              >
+                <Badge badgeContent={cartItemsCount} color="primary" overlap="circular">
+                  <CartIcon />
+                </Badge>
               </IconButton>
+            )}
+            
+            {/* Search button */}
+            <IconButton 
+              color="inherit"
+              sx={{
+                ml: { xs: 1, sm: 2 },
+                bgcolor: 'transparent',
+                '&:hover': { bgcolor: 'rgba(53, 102, 72, 0.08)' },
+              }}
+            >
+              <SearchIcon />
+            </IconButton>
+            
+            {/* If logged in, show user menu button */}
+            {isAuthenticated ? (
+              <>
+                <IconButton
+                  onClick={handleProfileMenuOpen}
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  color="inherit"
+                  sx={{
+                    ml: { xs: 1, sm: 2 },
+                    bgcolor: Boolean(anchorEl) ? 'rgba(53, 102, 72, 0.08)' : 'transparent',
+                    '&:hover': { bgcolor: 'rgba(53, 102, 72, 0.08)' },
+                  }}
+                >
+                  <Avatar 
+                    sx={{ 
+                      width: 36, 
+                      height: 36,
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                    }}
+                  >
+                    {user?.name?.charAt(0) || 'U'}
+                  </Avatar>
+                </IconButton>
+                
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  TransitionComponent={Fade}
+                  sx={{
+                    '& .MuiPaper-root': { 
+                      borderRadius: 3,
+                      boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+                      mt: 1.5,
+                      border: '1px solid rgba(0,0,0,0.05)',
+                    }
+                  }}
+                >
+                  <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      {user?.name || 'User'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {user?.email || 'user@example.com'}
+                    </Typography>
+                  </Box>
+                  <Divider sx={{ my: 1 }} />
+                  
+                  {!isAdminPage && (
+                    <div>
+                      <MenuItem onClick={() => handleSettingClick('/profile')} dense>
+                        My Account
+                      </MenuItem>
+                      <MenuItem onClick={() => handleSettingClick('/orders')} dense>
+                        My Orders
+                      </MenuItem>
+                    </div>
+                  )}
+                  
+                  {user?.isAdmin && !isAdminPage && (
+                    <div>
+                      <Divider sx={{ my: 1 }} />
+                      <MenuItem onClick={() => handleSettingClick('/admin')} dense>
+                        <ListItemIcon>
+                          <DashboardIcon fontSize="small" />
+                        </ListItemIcon>
+                        Admin Dashboard
+                      </MenuItem>
+                    </div>
+                  )}
+                  
+                  {isAdminPage && (
+                    <MenuItem onClick={() => handleSettingClick('/')} dense>
+                      Back to Store
+                    </MenuItem>
+                  )}
+                  
+                  <Divider sx={{ my: 1 }} />
+                  <MenuItem onClick={handleLogout} dense>
+                    Sign Out
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : (
+              // Show sign in / register buttons for logged out users
+              <Box sx={{ display: { xs: 'none', sm: 'flex' }, ml: 2 }}>
+                <Button
+                  component={RouterLink}
+                  to="/register"
+                  variant="outlined"
+                  color="primary"
+                  sx={{ 
+                    mr: 2,
+                    borderRadius: 50,
+                    px: 2,
+                  }}
+                >
+                  Sign Up
+                </Button>
+                <Button
+                  component={RouterLink}
+                  to="/login"
+                  variant="contained"
+                  color="primary"
+                  sx={{ 
+                    borderRadius: 50,
+                    px: 2,
+                  }}
+                >
+                  Sign In
+                </Button>
+              </Box>
             )}
           </Box>
         </Toolbar>
       </Container>
-
-      {/* Mobile navigation drawer */}
+      
+      {/* Mobile drawer */}
       <Drawer
-        anchor="right"
+        anchor="left"
+        variant="temporary"
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true,
+          keepMounted: true, // Better performance on mobile
         }}
         sx={{
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': { 
-            width: 280,
-            bgcolor: 'background.paper',
-            backdropFilter: 'blur(8px)',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            width: { xs: '85%', sm: 360 },
+            boxSizing: 'border-box',
+            border: 'none',
+            boxShadow: '4px 0 20px rgba(0,0,0,0.08)',
           },
         }}
       >

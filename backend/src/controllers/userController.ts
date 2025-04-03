@@ -165,4 +165,62 @@ export const deleteUser = async (req: Request, res: Response) => {
     console.error('Delete user error:', error);
     res.status(500).json({ message: 'Server error', error: (error as Error).message });
   }
+};
+
+// Get user profile
+export const getUserProfile = async (req: Request, res: Response) => {
+  try {
+    // User is added by the auth middleware
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    res.status(500).json({ message: 'Server error', error: (error as Error).message });
+  }
+};
+
+// Update user profile
+export const updateUserProfile = async (req: Request, res: Response) => {
+  try {
+    // User is added by the auth middleware
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    
+    const { name, email, phone, street, apartment, city, zip, country } = req.body;
+    
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Update fields if provided
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (street) user.street = street;
+    if (apartment) user.apartment = apartment;
+    if (city) user.city = city;
+    if (zip) user.zip = zip;
+    if (country) user.country = country;
+    
+    // Save updated user
+    const updatedUser = await user.save();
+    
+    res.json({ message: 'Profile updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error('Update user profile error:', error);
+    res.status(500).json({ message: 'Server error', error: (error as Error).message });
+  }
 }; 

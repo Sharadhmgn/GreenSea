@@ -1,18 +1,16 @@
-import { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import {
-  Box,
-  Container,
-  Grid,
-  Typography,
+import React, { useState } from 'react';
+import { 
+  Box, 
+  Container, 
+  Grid, 
+  Typography, 
   Link,
-  TextField,
-  Button,
-  Divider,
   IconButton,
-  useTheme,
-  useMediaQuery,
+  Divider,
+  TextField,
+  Button
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Facebook as FacebookIcon,
   Twitter as TwitterIcon,
@@ -22,10 +20,9 @@ import {
   Phone as PhoneIcon,
   Email as EmailIcon,
 } from '@mui/icons-material';
+import Logo from './Logo';
 
 const Footer = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [email, setEmail] = useState('');
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,149 +39,204 @@ const Footer = () => {
   };
 
   return (
-    <Box
-      component="footer"
-      sx={{
-        bgcolor: 'primary.main',
-        color: 'white',
-        py: 6,
-        mt: 'auto',
-      }}
-    >
+    <Box component="footer" sx={{ bgcolor: '#fafaf7', py: 8, borderTop: '1px solid rgba(0, 0, 0, 0.05)' }}>
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           {/* Company Info */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" gutterBottom fontWeight="bold">
-              Green Sea Foods
-            </Typography>
-            <Typography variant="body2" paragraph>
+          <Grid item xs={12} sm={6} md={4}>
+            <Box sx={{ mb: 3 }}>
+              <Logo height={45} />
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Supplying top-quality fresh fish and vegetables to restaurants and food businesses. Reliable supply, competitive pricing, and exceptional service.
             </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1.5 }}>
               <IconButton
                 aria-label="facebook"
                 size="small"
                 sx={{
-                  color: 'white',
-                  '&:hover': { color: 'secondary.main' },
+                  color: 'text.secondary',
+                  bgcolor: 'rgba(0, 0, 0, 0.04)',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    bgcolor: 'rgba(53, 102, 72, 0.1)'
+                  },
                 }}
               >
-                <FacebookIcon />
+                <FacebookIcon fontSize="small" />
               </IconButton>
               <IconButton
                 aria-label="twitter"
                 size="small"
                 sx={{
-                  color: 'white',
-                  '&:hover': { color: 'secondary.main' },
+                  color: 'text.secondary',
+                  bgcolor: 'rgba(0, 0, 0, 0.04)',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    bgcolor: 'rgba(53, 102, 72, 0.1)'
+                  },
                 }}
               >
-                <TwitterIcon />
+                <TwitterIcon fontSize="small" />
               </IconButton>
               <IconButton
                 aria-label="instagram"
                 size="small"
                 sx={{
-                  color: 'white',
-                  '&:hover': { color: 'secondary.main' },
+                  color: 'text.secondary',
+                  bgcolor: 'rgba(0, 0, 0, 0.04)',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    bgcolor: 'rgba(53, 102, 72, 0.1)'
+                  },
                 }}
               >
-                <InstagramIcon />
+                <InstagramIcon fontSize="small" />
               </IconButton>
               <IconButton
                 aria-label="linkedin"
                 size="small"
                 sx={{
-                  color: 'white',
-                  '&:hover': { color: 'secondary.main' },
+                  color: 'text.secondary',
+                  bgcolor: 'rgba(0, 0, 0, 0.04)',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    bgcolor: 'rgba(53, 102, 72, 0.1)'
+                  },
                 }}
               >
-                <LinkedInIcon />
+                <LinkedInIcon fontSize="small" />
               </IconButton>
             </Box>
           </Grid>
-
+          
           {/* Quick Links */}
-          <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" gutterBottom fontWeight="bold">
+          <Grid item xs={12} sm={6} md={2}>
+            <Typography variant="subtitle1" gutterBottom fontWeight="600" sx={{ mb: 3 }}>
               Quick Links
             </Typography>
-            <Link
-              component={RouterLink}
-              to="/"
-              color="inherit"
-              underline="hover"
-              sx={{ display: 'block', mb: 1 }}
-            >
-              Home
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/shop"
-              color="inherit"
-              underline="hover"
-              sx={{ display: 'block', mb: 1 }}
-            >
-              Shop
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/best-sellers"
-              color="inherit"
-              underline="hover"
-              sx={{ display: 'block', mb: 1 }}
-            >
-              Best Sellers
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/about-us"
-              color="inherit"
-              underline="hover"
-              sx={{ display: 'block', mb: 1 }}
-            >
-              About Us
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/cart"
-              color="inherit"
-              underline="hover"
-              sx={{ display: 'block', mb: 1 }}
-            >
-              Shopping Cart
-            </Link>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Link
+                component={RouterLink}
+                to="/"
+                color="text.secondary"
+                underline="none"
+                sx={{ 
+                  display: 'inline-block', 
+                  transition: 'color 0.2s, transform 0.2s',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    transform: 'translateX(3px)'
+                  }
+                }}
+              >
+                Home
+              </Link>
+              <Link
+                component={RouterLink}
+                to="/shop"
+                color="text.secondary"
+                underline="none"
+                sx={{ 
+                  display: 'inline-block',
+                  transition: 'color 0.2s, transform 0.2s',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    transform: 'translateX(3px)'
+                  }
+                }}
+              >
+                Shop
+              </Link>
+              <Link
+                component={RouterLink}
+                to="/best-sellers"
+                color="text.secondary"
+                underline="none"
+                sx={{ 
+                  display: 'inline-block',
+                  transition: 'color 0.2s, transform 0.2s',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    transform: 'translateX(3px)'
+                  }
+                }}
+              >
+                Best Sellers
+              </Link>
+              <Link
+                component={RouterLink}
+                to="/about-us"
+                color="text.secondary"
+                underline="none"
+                sx={{ 
+                  display: 'inline-block',
+                  transition: 'color 0.2s, transform 0.2s',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    transform: 'translateX(3px)'
+                  }
+                }}
+              >
+                About Us
+              </Link>
+              <Link
+                component={RouterLink}
+                to="/cart"
+                color="text.secondary"
+                underline="none"
+                sx={{ 
+                  display: 'inline-block',
+                  transition: 'color 0.2s, transform 0.2s',
+                  '&:hover': { 
+                    color: 'primary.main',
+                    transform: 'translateX(3px)'
+                  }
+                }}
+              >
+                Shopping Cart
+              </Link>
+            </Box>
           </Grid>
-
+          
           {/* Contact Info */}
           <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" gutterBottom fontWeight="bold">
+            <Typography variant="subtitle1" gutterBottom fontWeight="600" sx={{ mb: 3 }}>
               Contact Us
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <LocationIcon fontSize="small" sx={{ mr: 1 }} />
-              <Typography variant="body2">Belgium</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <PhoneIcon fontSize="small" sx={{ mr: 1 }} />
-              <Typography variant="body2">+32 3 012344</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-              <EmailIcon fontSize="small" sx={{ mr: 1 }} />
-              <Typography variant="body2">info@greenseafood.be</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <LocationIcon fontSize="small" sx={{ mr: 1.5, mt: 0.3, color: 'primary.main' }} />
+                <Typography variant="body2" color="text.secondary">Belgium</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <PhoneIcon fontSize="small" sx={{ mr: 1.5, mt: 0.3, color: 'primary.main' }} />
+                <Typography variant="body2" color="text.secondary">+32 3 012344</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <EmailIcon fontSize="small" sx={{ mr: 1.5, mt: 0.3, color: 'primary.main' }} />
+                <Typography variant="body2" color="text.secondary">info@greenseafood.be</Typography>
+              </Box>
             </Box>
           </Grid>
-
-          {/* Newsletter */}
+          
+          {/* Newsletter or Additional Info */}
           <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" gutterBottom fontWeight="bold">
+            <Typography variant="subtitle1" gutterBottom fontWeight="600" sx={{ mb: 3 }}>
               Newsletter
             </Typography>
-            <Typography variant="body2" paragraph>
+            <Typography variant="body2" paragraph sx={{ color: 'text.secondary', mb: 3 }}>
               Subscribe to our newsletter for special deals, recipes, and updates!
             </Typography>
-            <Box component="form" onSubmit={handleSubmit}>
+            <Box 
+              component="form" 
+              onSubmit={handleSubmit}
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 1.5,
+              }}
+            >
               <TextField
                 size="small"
                 fullWidth
@@ -194,75 +246,88 @@ const Footer = () => {
                 onChange={handleEmailChange}
                 required
                 sx={{
-                  mb: 1,
-                  bgcolor: 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: 1,
+                  bgcolor: 'white',
                   '& .MuiOutlinedInput-root': {
+                    borderRadius: 50,
+                    height: 48,
                     '& fieldset': {
-                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      borderColor: 'rgba(0, 0, 0, 0.1)',
                     },
                     '&:hover fieldset': {
-                      borderColor: 'white',
+                      borderColor: 'primary.main',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: 'secondary.main',
+                      borderColor: 'primary.main',
                     },
-                  },
-                  '& .MuiInputBase-input': {
-                    color: 'white',
                   },
                 }}
               />
               <Button
                 type="submit"
                 variant="contained"
-                color="secondary"
-                fullWidth
+                color="primary"
+                sx={{ 
+                  borderRadius: 50,
+                  height: 48,
+                  px: 3,
+                  minWidth: { xs: '100%', sm: 'auto' }
+                }}
               >
                 Subscribe
               </Button>
             </Box>
           </Grid>
         </Grid>
-
-        <Divider sx={{ my: 4, backgroundColor: 'rgba(255, 255, 255, 0.2)' }} />
-
+        
+        <Divider sx={{ my: 6, backgroundColor: 'rgba(0, 0, 0, 0.08)' }} />
+        
         <Box
           sx={{
             display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
+            flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
-            alignItems: isMobile ? 'center' : 'flex-start',
-            textAlign: isMobile ? 'center' : 'left',
-            gap: 2,
+            alignItems: { xs: 'center', md: 'center' },
+            textAlign: { xs: 'center', md: 'left' },
+            gap: { xs: 2, md: 0 },
           }}
         >
-          <Typography variant="body2">
+          <Typography variant="body2" color="text.secondary">
             &copy; {new Date().getFullYear()} Green Sea Food. All rights reserved.
           </Typography>
-          <Box>
+          
+          <Typography variant="body2" color="text.secondary" align="center">
+            Powered by Green Sea Foods - The #1 Supplier for Fresh Fish and Vegetables
+          </Typography>
+          
+          <Box sx={{ display: 'flex', gap: 3 }}>
             <Link
               component={RouterLink}
               to="/privacy"
-              color="inherit"
-              underline="hover"
-              sx={{ mr: 2 }}
+              color="text.secondary"
+              underline="none"
+              sx={{ 
+                fontSize: '0.875rem',
+                transition: 'color 0.2s',
+                '&:hover': { color: 'primary.main' }
+              }}
             >
               Privacy Policy
             </Link>
             <Link
               component={RouterLink}
               to="/terms"
-              color="inherit"
-              underline="hover"
+              color="text.secondary"
+              underline="none"
+              sx={{ 
+                fontSize: '0.875rem',
+                transition: 'color 0.2s',
+                '&:hover': { color: 'primary.main' }
+              }}
             >
               Terms of Service
             </Link>
           </Box>
         </Box>
-        <Typography variant="body2" align="center" sx={{ mt: 2, opacity: 0.8 }}>
-          Powered by Green Sea Foods - The #1 Supplier for Fresh Fish and Vegetables
-        </Typography>
       </Container>
     </Box>
   );

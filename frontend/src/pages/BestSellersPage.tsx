@@ -8,14 +8,26 @@ import {
   CardMedia, 
   CardContent, 
   CardActions, 
-  Button, 
+  Button,
   Rating, 
   Chip,
   Skeleton,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  alpha,
+  Divider,
+  Link,
+  IconButton,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import { AddShoppingCart as AddToCartIcon } from '@mui/icons-material';
+import { 
+  AddShoppingCart as AddToCartIcon,
+  Star as StarIcon,
+  LocalShipping as ShippingIcon,
+  Favorite as FavoriteIcon,
+  ArrowForward as ArrowForwardIcon,
+} from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import api from '../utils/api';
 import { useCart } from '../context/CartContext';
 
@@ -37,6 +49,7 @@ interface Product {
 }
 
 const BestSellersPage = () => {
+  const theme = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -191,191 +204,378 @@ const BestSellersPage = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <Container maxWidth="lg" sx={{ my: 8 }}>
-        <Typography variant="h3" component="h1" sx={{ mb: 4, fontWeight: 700 }}>
-          Best Sellers
-        </Typography>
-        <Grid container spacing={4}>
-          {[...Array(8)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                <Skeleton variant="rectangular" height={200} />
-                <CardContent>
-                  <Skeleton height={30} width="80%" />
-                  <Skeleton height={20} width="50%" />
-                  <Skeleton height={40} width="30%" />
-                </CardContent>
-                <CardActions>
-                  <Skeleton height={40} width="100%" />
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ my: 8, textAlign: 'center' }}>
-        <Typography variant="h4" color="error" sx={{ mb: 2 }}>
-          {error}
-        </Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={() => window.location.reload()}
-        >
-          Try Again
-        </Button>
-      </Container>
-    );
-  }
-
   return (
-    <Container maxWidth="lg" sx={{ my: 8 }}>
-      {/* Page Heading */}
-      <Box sx={{ mb: 6, textAlign: 'center' }}>
-        <Typography variant="h3" component="h1" sx={{ mb: 2, fontWeight: 700 }}>
-          Our Best Sellers
-        </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '800px', mx: 'auto' }}>
-          Discover our most popular high-quality products, loved by customers
-        </Typography>
-      </Box>
+    <Box>
+      {/* Hero Section */}
+      <Box
+        sx={{
+          position: 'relative',
+          py: { xs: 10, md: 16 },
+          bgcolor: alpha(theme.palette.primary.main, 0.03),
+          mb: { xs: 8, md: 12 },
+          overflow: 'hidden',
+        }}
+      >
+        {/* Decorative shapes */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: { xs: -100, md: -120 },
+            right: { xs: -100, md: -50 },
+            width: { xs: 250, md: 350 },
+            height: { xs: 250, md: 350 },
+            borderRadius: '50%',
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)}, ${alpha(theme.palette.primary.light, 0.1)})`,
+            zIndex: 0,
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: { xs: -80, md: -120 },
+            left: { xs: -100, md: -50 },
+            width: { xs: 200, md: 300 },
+            height: { xs: 200, md: 300 },
+            borderRadius: '50%',
+            background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.05)}, ${alpha(theme.palette.secondary.light, 0.1)})`,
+            zIndex: 0,
+          }}
+        />
 
-      {/* Products Grid */}
-      <Grid container spacing={4}>
-        {products.map(product => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
-            <Card 
-              sx={{ 
-                height: '100%', 
-                display: 'flex', 
-                flexDirection: 'column',
-                transition: 'transform 0.2s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-8px)',
-                },
-                borderRadius: 3,
-                overflow: 'hidden',
-                boxShadow: '0 6px 20px rgba(0,0,0,0.1)'
-              }}
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          <Box sx={{ maxWidth: 800, mx: 'auto', textAlign: 'center' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
             >
-              <Box sx={{ position: 'relative' }}>
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={product.image}
-                  alt={product.name}
-                  sx={{ objectFit: 'cover' }}
-                />
-                <Box 
-                  sx={{ 
-                    position: 'absolute', 
-                    top: 12, 
-                    right: 12, 
-                    zIndex: 1 
-                  }}
-                >
-                  <Chip 
-                    label="Best Seller" 
-                    color="warning" 
-                    size="small"
-                    sx={{ 
-                      fontWeight: 'bold',
-                      bgcolor: 'warning.main',
-                      color: 'white'
-                    }}
-                  />
+              <Typography
+                variant="overline"
+                sx={{
+                  fontSize: { xs: '0.75rem', md: '0.875rem' },
+                  fontWeight: 600,
+                  letterSpacing: 1.5,
+                  color: theme.palette.primary.main,
+                  mb: 2,
+                  display: 'block',
+                }}
+              >
+                CUSTOMER FAVORITES
+              </Typography>
+              <Typography
+                variant="h1"
+                component="h1"
+                sx={{
+                  fontSize: { xs: '2.5rem', md: '4rem' },
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.1,
+                  mb: 3,
+                }}
+              >
+                Best Sellers
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'text.secondary',
+                  fontWeight: 400,
+                  fontSize: { xs: '1rem', md: '1.25rem' },
+                  mb: 4,
+                  maxWidth: 650,
+                  mx: 'auto',
+                  lineHeight: 1.6,
+                }}
+              >
+                Discover our most popular products loved by customers. Premium quality, exceptional taste, and sustainably sourced.
+              </Typography>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <Box 
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: { xs: 2, md: 4 },
+                  mt: 4,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <StarIcon sx={{ color: theme.palette.warning.main, mr: 1 }} />
+                  <Typography variant="subtitle2">Top Rated</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <ShippingIcon sx={{ color: theme.palette.primary.main, mr: 1 }} />
+                  <Typography variant="subtitle2">Fast Delivery</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <FavoriteIcon sx={{ color: theme.palette.error.main, mr: 1 }} />
+                  <Typography variant="subtitle2">Customer Favorites</Typography>
                 </Box>
               </Box>
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography 
-                  variant="h6" 
-                  component={RouterLink} 
-                  to={`/product/${product._id}`} 
-                  sx={{ 
-                    color: 'primary.main', 
-                    textDecoration: 'none',
-                    fontWeight: 600,
-                    '&:hover': {
-                      color: 'primary.dark',
-                      textDecoration: 'underline',
-                    }
-                  }}
-                >
-                  {product.name}
-                </Typography>
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    my: 1 
-                  }}
-                >
-                  <Rating 
-                    value={product.rating || 0} 
-                    precision={0.1} 
-                    readOnly 
-                    size="small" 
-                  />
-                  <Typography 
-                    variant="body2" 
-                    sx={{ ml: 1 }}
-                    color="text.secondary"
+            </motion.div>
+          </Box>
+        </Container>
+      </Box>
+
+      <Container maxWidth="lg">
+        {loading ? (
+          <Box sx={{ my: 8, textAlign: 'center' }}>
+            <CircularProgress size={60} thickness={4} />
+          </Box>
+        ) : error ? (
+          <Box sx={{ my: 8, textAlign: 'center', p: 4 }}>
+            <Typography 
+              variant="h5" 
+              color="error" 
+              gutterBottom
+              sx={{ fontWeight: 600 }}
+            >
+              Oops! Something went wrong.
+            </Typography>
+            <Typography variant="body1">{error}</Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 3, borderRadius: 2 }}
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </Button>
+          </Box>
+        ) : (
+          <Box sx={{ mb: 10 }}>
+            <Grid container spacing={4}>
+              {products.map((product, index) => (
+                <Grid item key={product._id} xs={12} sm={6} md={3}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
                   >
-                    ({product.numReviews})
-                  </Typography>
-                </Box>
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary" 
-                  sx={{ mb: 2 }}
-                >
-                  {product.description.length > 80 
-                    ? `${product.description.substring(0, 80)}...` 
-                    : product.description}
-                </Typography>
-                <Typography 
-                  variant="h5" 
-                  component="div" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    color: 'primary.main'
-                  }}
-                >
-                  ${product.price.toFixed(2)}
-                </Typography>
-              </CardContent>
-              <CardActions sx={{ p: 2, pt: 0 }}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  startIcon={<AddToCartIcon />}
-                  onClick={() => handleAddToCart(product)}
-                  disabled={product.countInStock === 0}
-                  sx={{ 
-                    borderRadius: 8,
-                    py: 1,
-                    boxShadow: 'none',
-                    '&:hover': {
-                      boxShadow: '0 4px 12px rgba(46, 125, 50, 0.2)',
-                    }
-                  }}
-                >
-                  {product.countInStock > 0 ? 'Add to Cart' : 'Out of Stock'}
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
+                    <Card
+                      elevation={0}
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+                        '&:hover': {
+                          transform: 'translateY(-8px)',
+                          boxShadow: '0 16px 40px rgba(0,0,0,0.1)',
+                          '& .product-image': {
+                            transform: 'scale(1.08)',
+                          },
+                        },
+                      }}
+                    >
+                      <Box sx={{ position: 'relative' }}>
+                        <CardMedia
+                          component="img"
+                          height={220}
+                          image={product.image}
+                          alt={product.name}
+                          className="product-image"
+                          sx={{
+                            transition: 'transform 0.8s cubic-bezier(0.25, 0.45, 0.45, 0.95)',
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: 12,
+                            left: 12,
+                            display: 'flex',
+                            gap: 1,
+                          }}
+                        >
+                          <Chip
+                            label={product.category.name}
+                            size="small"
+                            sx={{
+                              borderRadius: 1,
+                              bgcolor: alpha(theme.palette.background.paper, 0.9),
+                              backdropFilter: 'blur(8px)',
+                              color: theme.palette.text.secondary,
+                              fontSize: '0.7rem',
+                              fontWeight: 500,
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                            }}
+                          />
+                        </Box>
+                        {index < 3 && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: 12,
+                              right: 12,
+                              width: 36,
+                              height: 36,
+                              borderRadius: '50%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              bgcolor: theme.palette.primary.main,
+                              color: 'white',
+                              fontWeight: 'bold',
+                              boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                              border: '2px solid white',
+                            }}
+                          >
+                            #{index + 1}
+                          </Box>
+                        )}
+                      </Box>
+                      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                        <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <Link
+                            component={RouterLink}
+                            to={`/product/${product._id}`}
+                            underline="none"
+                            sx={{ width: '85%' }}
+                          >
+                            <Typography
+                              variant="h6"
+                              sx={{
+                                fontWeight: 600,
+                                color: 'text.primary',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                                transition: 'color 0.2s',
+                                '&:hover': { color: 'primary.main' },
+                              }}
+                            >
+                              {product.name}
+                            </Typography>
+                          </Link>
+                          <IconButton 
+                            size="small" 
+                            aria-label="add to wishlist"
+                            sx={{ 
+                              color: 'text.secondary',
+                              '&:hover': { color: 'error.main' },
+                            }}
+                          >
+                            <FavoriteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                          <Rating
+                            value={product.rating || 0}
+                            precision={0.1}
+                            readOnly
+                            size="small"
+                            icon={<StarIcon fontSize="inherit" sx={{ color: theme.palette.warning.main }} />}
+                          />
+                          <Typography
+                            variant="body2"
+                            sx={{ ml: 1, color: 'text.secondary', fontSize: '0.75rem' }}
+                          >
+                            ({product.numReviews || 0} reviews)
+                          </Typography>
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            mb: 2,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            lineHeight: 1.5,
+                            height: '3em',
+                          }}
+                        >
+                          {product.description}
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 700, color: 'primary.main' }}
+                          >
+                            ${product.price.toFixed(2)}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: product.countInStock > 0 ? 'success.main' : 'error.main',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {product.countInStock > 0 ? 'In Stock' : 'Out of Stock'}
+                          </Typography>
+                        </Box>
+                      </CardContent>
+                      <Divider />
+                      <CardActions sx={{ p: 2 }}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          disabled={product.countInStock === 0}
+                          onClick={() => handleAddToCart(product)}
+                          startIcon={<AddToCartIcon />}
+                          sx={{
+                            py: 1.5,
+                            borderRadius: 2,
+                            boxShadow: 'none',
+                            fontWeight: 600,
+                            '&:hover': {
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                            },
+                          }}
+                        >
+                          Add to Cart
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </motion.div>
+                </Grid>
+              ))}
+            </Grid>
+
+            {/* View all products link */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+              <Button
+                component={RouterLink}
+                to="/shop"
+                variant="outlined"
+                color="primary"
+                endIcon={<ArrowForwardIcon />}
+                sx={{
+                  py: 1.5,
+                  px: 4,
+                  borderRadius: 50,
+                  borderWidth: 2,
+                  fontWeight: 600,
+                  '&:hover': {
+                    borderWidth: 2,
+                    backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                  },
+                }}
+              >
+                View All Products
+              </Button>
+            </Box>
+          </Box>
+        )}
+      </Container>
+    </Box>
   );
 };
 

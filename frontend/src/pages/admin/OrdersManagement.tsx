@@ -46,46 +46,18 @@ import {
   CancelOutlined as CancelIcon,
   Print as PrintIcon,
   Email as EmailIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  FileDownload as FileDownloadIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
-
-// Types
-interface Order {
-  _id: string;
-  orderNumber: string;
-  user: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  totalPrice: number;
-  shippingAddress: {
-    street: string;
-    city: string;
-    postalCode: string;
-    country: string;
-  };
-  items: {
-    quantity: number;
-    product: {
-      _id: string;
-      name: string;
-      price: number;
-      image?: string;
-    };
-  }[];
-  status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-  paymentStatus: 'Pending' | 'Paid' | 'Failed';
-  dateOrdered: string;
-}
+import OrderService, { Order as OrderType } from '../../utils/OrderService';
 
 const OrdersManagement = () => {
   const navigate = useNavigate();
   
   // State
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -96,7 +68,7 @@ const OrdersManagement = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   
   // Fetch orders
@@ -105,202 +77,33 @@ const OrdersManagement = () => {
       try {
         setLoading(true);
         
-        // In a real application, you would fetch this data from your API
-        // For now, we'll use placeholder data
+        // Fetch orders from our service instead of mock data
+        const fetchedOrders = await OrderService.getOrders();
         
-        // Mock API call for orders
-        // const ordersResponse = await api.get('/orders', { params: { status, search: searchQuery, page, limit: rowsPerPage } });
-        const ordersData: Order[] = [
-          {
-            _id: '1',
-            orderNumber: 'GSF-2023-001',
-            user: {
-              _id: 'u1',
-              name: 'John Doe',
-              email: 'john@example.com'
-            },
-            totalPrice: 129.95,
-            shippingAddress: {
-              street: '123 Main St',
-              city: 'New York',
-              postalCode: '10001',
-              country: 'USA'
-            },
-            items: [
-              {
-                quantity: 2,
-                product: {
-                  _id: 'p1',
-                  name: 'Fresh Atlantic Salmon',
-                  price: 15.99,
-                  image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2'
-                }
-              },
-              {
-                quantity: 1,
-                product: {
-                  _id: 'p2',
-                  name: 'Jumbo Shrimp',
-                  price: 19.99,
-                  image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6'
-                }
-              }
-            ],
-            status: 'Delivered',
-            paymentStatus: 'Paid',
-            dateOrdered: '2023-06-10T14:30:00Z'
-          },
-          {
-            _id: '2',
-            orderNumber: 'GSF-2023-002',
-            user: {
-              _id: 'u2',
-              name: 'Jane Smith',
-              email: 'jane@example.com'
-            },
-            totalPrice: 76.50,
-            shippingAddress: {
-              street: '456 Elm St',
-              city: 'Los Angeles',
-              postalCode: '90001',
-              country: 'USA'
-            },
-            items: [
-              {
-                quantity: 3,
-                product: {
-                  _id: 'p3',
-                  name: 'Organic Kale',
-                  price: 3.99,
-                  image: 'https://images.unsplash.com/photo-1576038761798-77b5ca810e2e'
-                }
-              },
-              {
-                quantity: 2,
-                product: {
-                  _id: 'p4',
-                  name: 'Wild Cod Fillets',
-                  price: 12.99,
-                  image: 'https://images.unsplash.com/photo-1583227061267-8428fb76fb2d'
-                }
-              }
-            ],
-            status: 'Processing',
-            paymentStatus: 'Paid',
-            dateOrdered: '2023-06-12T09:15:00Z'
-          },
-          {
-            _id: '3',
-            orderNumber: 'GSF-2023-003',
-            user: {
-              _id: 'u3',
-              name: 'Robert Johnson',
-              email: 'robert@example.com'
-            },
-            totalPrice: 224.75,
-            shippingAddress: {
-              street: '789 Oak St',
-              city: 'Chicago',
-              postalCode: '60601',
-              country: 'USA'
-            },
-            items: [
-              {
-                quantity: 1,
-                product: {
-                  _id: 'p5',
-                  name: 'Seafood Paella Kit',
-                  price: 29.99,
-                  image: 'https://images.unsplash.com/photo-1534939561126-855b8675edd7'
-                }
-              }
-            ],
-            status: 'Shipped',
-            paymentStatus: 'Paid',
-            dateOrdered: '2023-06-11T16:45:00Z'
-          },
-          {
-            _id: '4',
-            orderNumber: 'GSF-2023-004',
-            user: {
-              _id: 'u4',
-              name: 'Emily Davis',
-              email: 'emily@example.com'
-            },
-            totalPrice: 95.20,
-            shippingAddress: {
-              street: '101 Pine St',
-              city: 'Seattle',
-              postalCode: '98101',
-              country: 'USA'
-            },
-            items: [
-              {
-                quantity: 4,
-                product: {
-                  _id: 'p6',
-                  name: 'Organic Bell Peppers',
-                  price: 4.99,
-                  image: 'https://images.unsplash.com/photo-1563199544-9cb8c83bd59a'
-                }
-              },
-              {
-                quantity: 2,
-                product: {
-                  _id: 'p1',
-                  name: 'Fresh Atlantic Salmon',
-                  price: 15.99,
-                  image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2'
-                }
-              }
-            ],
-            status: 'Pending',
-            paymentStatus: 'Pending',
-            dateOrdered: '2023-06-13T11:20:00Z'
-          },
-          {
-            _id: '5',
-            orderNumber: 'GSF-2023-005',
-            user: {
-              _id: 'u5',
-              name: 'Michael Wilson',
-              email: 'michael@example.com'
-            },
-            totalPrice: 156.80,
-            shippingAddress: {
-              street: '222 Maple St',
-              city: 'Boston',
-              postalCode: '02101',
-              country: 'USA'
-            },
-            items: [
-              {
-                quantity: 1,
-                product: {
-                  _id: 'p7',
-                  name: 'Wild Caught Tuna',
-                  price: 22.99,
-                  image: 'https://images.unsplash.com/photo-1602404421624-87725823896d'
-                }
-              },
-              {
-                quantity: 3,
-                product: {
-                  _id: 'p2',
-                  name: 'Jumbo Shrimp',
-                  price: 19.99,
-                  image: 'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6'
-                }
-              }
-            ],
-            status: 'Cancelled',
-            paymentStatus: 'Failed',
-            dateOrdered: '2023-06-13T13:10:00Z'
+        // Filter orders based on selected tab (status)
+        let filteredOrders = fetchedOrders;
+        
+        // If not showing 'All' (tab value 0), filter by status
+        if (tabValue !== 0) {
+          const statusMap = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+          const statusFilter = statusMap[tabValue];
+          if (statusFilter !== 'All') {
+            filteredOrders = fetchedOrders.filter(order => order.status === statusFilter);
           }
-        ];
+        }
         
-        setOrders(ordersData);
-        setTotalOrders(ordersData.length);
+        // Apply search filter if any
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          filteredOrders = filteredOrders.filter(order => 
+            order.orderNumber.toLowerCase().includes(query) || 
+            order.user.name.toLowerCase().includes(query) ||
+            order.user.email.toLowerCase().includes(query)
+          );
+        }
+        
+        setOrders(filteredOrders);
+        setTotalOrders(filteredOrders.length);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -310,7 +113,7 @@ const OrdersManagement = () => {
     };
     
     fetchOrders();
-  }, [page, rowsPerPage, searchQuery, tabValue]);
+  }, [tabValue, searchQuery]);
   
   // Handle Search
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -351,36 +154,34 @@ const OrdersManagement = () => {
   };
   
   // View order details
-  const handleViewOrder = (order: Order) => {
+  const handleViewOrder = (order: OrderType) => {
     setSelectedOrder(order);
     setViewDialogOpen(true);
     handleMenuClose();
   };
   
   // Update order status
-  const handleUpdateStatus = async (newStatus: Order['status']) => {
+  const handleUpdateStatus = async (newStatus: OrderType['status']) => {
     if (!selectedOrderId) return;
     
     try {
-      // In a real app, this would make an API call
-      // await api.put(`/orders/${selectedOrderId}/status`, { status: newStatus });
+      await OrderService.updateOrderStatus(selectedOrderId, newStatus);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Update orders in state
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order._id === selectedOrderId ? { ...order, status: newStatus } : order
+        )
+      );
       
-      // Update local state
-      setOrders(orders.map(order => 
-        order._id === selectedOrderId ? { ...order, status: newStatus } : order
-      ));
-      
-      // Show success message
-      setSuccessMessage(`Order ${orders.find(o => o._id === selectedOrderId)?.orderNumber} status updated to ${newStatus}.`);
-      setTimeout(() => setSuccessMessage(''), 5000);
+      setSuccessMessage(`Order status updated to ${newStatus}`);
+      setTimeout(() => setSuccessMessage(''), 3000);
       
       handleMenuClose();
     } catch (error) {
       console.error('Error updating order status:', error);
       setError('Failed to update order status. Please try again.');
+      setTimeout(() => setError(''), 3000);
     }
   };
   
@@ -402,7 +203,7 @@ const OrdersManagement = () => {
   };
   
   // Get status color
-  const getStatusColor = (status: Order['status']) => {
+  const getStatusColor = (status: OrderType['status']) => {
     switch(status) {
       case 'Delivered':
         return '#43a047'; // green
@@ -420,7 +221,7 @@ const OrdersManagement = () => {
   };
   
   // Get payment status color
-  const getPaymentStatusColor = (status: Order['paymentStatus']) => {
+  const getPaymentStatusColor = (status: OrderType['paymentStatus']) => {
     switch(status) {
       case 'Paid':
         return '#43a047'; // green
@@ -437,7 +238,7 @@ const OrdersManagement = () => {
   const getFilteredOrders = () => {
     if (tabValue === 0) return orders; // All orders
     
-    const statusMap: { [key: number]: Order['status'] } = {
+    const statusMap: { [key: number]: OrderType['status'] } = {
       1: 'Pending',
       2: 'Processing',
       3: 'Shipped',
@@ -446,6 +247,33 @@ const OrdersManagement = () => {
     };
     
     return orders.filter(order => order.status === statusMap[tabValue]);
+  };
+  
+  // Add a function to handle Excel export
+  const handleExportToExcel = () => {
+    try {
+      // Filter out any invalid orders before passing to the export function
+      const validOrders = orders.filter(order => 
+        order && 
+        typeof order === 'object' && 
+        order.orderNumber && 
+        order.user
+      );
+      
+      if (validOrders.length === 0) {
+        setError('No valid orders to export');
+        setTimeout(() => setError(''), 3000);
+        return;
+      }
+      
+      OrderService.exportOrdersToExcel(validOrders);
+      setSuccessMessage('Orders exported to Excel successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error exporting orders:', error);
+      setError(`Failed to export orders: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setTimeout(() => setError(''), 5000);
+    }
   };
   
   if (loading) {
@@ -525,6 +353,17 @@ const OrdersManagement = () => {
                   ),
                 }}
               />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, mb: { xs: 2, md: 0 } }}>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<FileDownloadIcon />}
+                onClick={handleExportToExcel}
+                sx={{ borderRadius: 2, whiteSpace: 'nowrap' }}
+              >
+                Export to Excel
+              </Button>
             </Box>
           </Box>
         </Paper>

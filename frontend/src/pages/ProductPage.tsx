@@ -22,6 +22,13 @@ import {
   Card,
   CardMedia,
   CardContent,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Snackbar,
+  useTheme,
+  alpha,
 } from '@mui/material';
 import {
   ShoppingCart as CartIcon,
@@ -29,12 +36,18 @@ import {
   FavoriteBorder as FavoriteBorderIcon,
   Add as AddIcon,
   Remove as RemoveIcon,
+  Check as CheckIcon,
+  LocalShipping as ShippingIcon,
+  Refresh as RefreshIcon,
+  Shield as ShieldIcon,
+  Star as StarIcon,
+  Home as HomeIcon,
   Info as InfoIcon,
   Description as DescriptionIcon,
   Reviews as ReviewsIcon,
   NavigateNext as NavigateNextIcon,
 } from '@mui/icons-material';
-import { useCart } from '../context/CartContext';
+import { useCart, Product as CartProduct } from '../context/CartContext';
 import { styled } from '@mui/material/styles';
 
 // Styled components
@@ -67,8 +80,8 @@ const ThumbnailImage = styled('img')(({ theme }) => ({
   },
 }));
 
-// Mock Product Interface
-interface Product {
+// Update the interface to avoid naming conflicts
+interface ProductDetails {
   _id: string;
   name: string;
   description: string;
@@ -95,7 +108,7 @@ const ProductPage: React.FC = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart() || { addToCart: () => {} };
   
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<ProductDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -116,7 +129,7 @@ const ProductPage: React.FC = () => {
         
         // Mock data for demonstration
         setTimeout(() => {
-          const mockProduct: Product = {
+          const mockProduct: ProductDetails = {
             _id: id || '1',
             name: 'Fresh Atlantic Salmon Fillet',
             description: 'Premium quality fresh Atlantic salmon, perfect for grilling or baking.',
@@ -153,10 +166,9 @@ const ProductPage: React.FC = () => {
           setProduct(mockProduct);
           setActiveImage(mockProduct.image);
           setLoading(false);
-        }, 800);
-      } catch (err) {
-        console.error('Error fetching product:', err);
-        setError('Failed to load product. Please try again.');
+        }, 1000);
+      } catch (error) {
+        setError('Failed to fetch product data');
         setLoading(false);
       }
     };
@@ -185,11 +197,19 @@ const ProductPage: React.FC = () => {
   
   const handleAddToCart = () => {
     if (product) {
-      addToCart({
-        productId: product._id,
-        quantity: quantity
-      });
+      // Convert the product to match the CartProduct interface from CartContext
+      const cartProduct: CartProduct = {
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        category: product.category?.name || 'Uncategorized',
+        countInStock: product.countInStock,
+        description: product.description,
+        rating: product.rating
+      };
       
+      addToCart(cartProduct, quantity);
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 3000);
     }

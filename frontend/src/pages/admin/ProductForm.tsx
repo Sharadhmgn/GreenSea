@@ -98,63 +98,35 @@ const ProductForm = () => {
       try {
         setLoading(true);
         
-        // Mock API call for categories
-        const categoriesData: Category[] = [
-          { _id: '1', name: 'Fresh Fish', icon: 'fish', color: '#1a5f7a' },
-          { _id: '2', name: 'Shellfish', icon: 'set_meal', color: '#ff8a00' },
-          { _id: '3', name: 'Organic Vegetables', icon: 'eco', color: '#2e7d32' },
-          { _id: '4', name: 'Prepared Meals', icon: 'restaurant', color: '#9c27b0' }
-        ];
-        
-        setCategories(categoriesData);
+        // Fetch categories from API
+        const categoriesResponse = await api.get('/categories');
+        setCategories(categoriesResponse.data);
         
         if (isEditMode) {
-          // In a real app, this would make an API call
-          // const response = await api.get(`/products/${id}`);
-          
-          // Mock product data for edit mode
-          const mockProduct = {
-            _id: id,
-            name: 'Fresh Atlantic Salmon',
-            description: 'Premium quality salmon fillet, perfect for grilling or baking',
-            richDescription: '<p>Our <strong>Atlantic Salmon</strong> is sourced from sustainable farms in the cold, clear waters of the North Atlantic. Each fillet is carefully cut to ensure the perfect thickness for even cooking.</p><p>Rich in omega-3 fatty acids, this salmon has a buttery texture and delicate flavor that makes it perfect for:</p><ul><li>Grilling with herbs and lemon</li><li>Baking en papillote with vegetables</li><li>Pan-searing for a crispy skin</li></ul>',
-            image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80',
-            images: [
-              'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80',
-              'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80'
-            ],
-            brand: 'Ocean Fresh',
-            price: 15.99,
-            category: {
-              _id: '1',
-              name: 'Fresh Fish'
-            },
-            countInStock: 25,
-            rating: 4.7,
-            numReviews: 42,
-            isFeatured: true
-          };
+          // Fetch product data if in edit mode
+          const productResponse = await api.get(`/products/${id}`);
+          const productData = productResponse.data;
           
           setFormData({
-            name: mockProduct.name,
-            description: mockProduct.description,
-            richDescription: mockProduct.richDescription,
-            image: mockProduct.image,
-            images: mockProduct.images,
-            brand: mockProduct.brand,
-            price: mockProduct.price.toString(),
-            category: mockProduct.category._id,
-            countInStock: mockProduct.countInStock.toString(),
-            rating: mockProduct.rating.toString(),
-            numReviews: mockProduct.numReviews.toString(),
-            isFeatured: mockProduct.isFeatured
+            name: productData.name,
+            description: productData.description,
+            richDescription: productData.richDescription || '',
+            image: productData.image,
+            images: productData.images || [],
+            brand: productData.brand || '',
+            price: productData.price.toString(),
+            category: productData.category._id || productData.category,
+            countInStock: productData.countInStock.toString(),
+            rating: productData.rating ? productData.rating.toString() : '',
+            numReviews: productData.numReviews ? productData.numReviews.toString() : '',
+            isFeatured: productData.isFeatured
           });
           
           // Set image previews
-          setMainImagePreview(typeof mockProduct.image === 'string' ? mockProduct.image : null);
+          setMainImagePreview(typeof productData.image === 'string' ? productData.image : null);
           setAdditionalImagePreviews(
-            mockProduct.images
-              .filter((img): img is string => typeof img === 'string')
+            productData.images
+              .filter((img: any): img is string => typeof img === 'string')
           );
         }
         
@@ -332,37 +304,46 @@ const ProductForm = () => {
     setAlertMessage('');
     
     try {
-      // In a real app, this would use FormData to handle file uploads
-      const productData = {
-        name: formData.name,
-        description: formData.description,
-        richDescription: formData.richDescription,
-        brand: formData.brand,
-        price: parseFloat(formData.price),
-        category: formData.category,
-        countInStock: parseInt(formData.countInStock),
-        rating: formData.rating ? parseFloat(formData.rating) : undefined,
-        numReviews: formData.numReviews ? parseInt(formData.numReviews) : undefined,
-        isFeatured: formData.isFeatured
-      };
+      // Create FormData object to handle file uploads
+      const productFormData = new FormData();
+      
+      // Add text fields
+      productFormData.append('name', formData.name);
+      productFormData.append('description', formData.description);
+      productFormData.append('richDescription', formData.richDescription);
+      productFormData.append('brand', formData.brand);
+      productFormData.append('price', formData.price);
+      productFormData.append('category', formData.category);
+      productFormData.append('countInStock', formData.countInStock);
+      productFormData.append('rating', formData.rating || '0');
+      productFormData.append('numReviews', formData.numReviews || '0');
+      productFormData.append('isFeatured', formData.isFeatured.toString());
+      
+      // Add main image file
+      if (formData.image instanceof File) {
+        productFormData.append('image', formData.image);
+      }
+      
+      // For additional images (for gallery)
+      formData.images.forEach(image => {
+        if (image instanceof File) {
+          productFormData.append('images', image);
+        }
+      });
       
       if (isEditMode) {
         // Update existing product
-        // await api.put(`/products/${id}`, productData);
-        console.log('Updating product:', { id, ...productData });
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await api.put(`/products/${id}`, productFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         
         setAlertMessage('Product updated successfully!');
         setAlertSeverity('success');
       } else {
         // Create new product
-        // const response = await api.post('/products', productData);
-        console.log('Creating new product:', productData);
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await api.post('/products', productFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         
         setAlertMessage('Product created successfully!');
         setAlertSeverity('success');

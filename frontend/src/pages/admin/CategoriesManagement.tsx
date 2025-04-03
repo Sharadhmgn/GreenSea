@@ -31,10 +31,12 @@ import {
   Delete as DeleteIcon,
   Category as CategoryIcon,
   ColorLens as ColorLensIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  FileDownload as FileDownloadIcon
 } from '@mui/icons-material';
 import { ChromePicker } from 'react-color';
 import api from '../../utils/api';
+import OrderService from '../../utils/OrderService';
 
 // Types
 interface Category {
@@ -72,6 +74,7 @@ const CategoriesManagement = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   // Common icons for seafood/grocery categories
   const commonIcons = [
@@ -246,6 +249,26 @@ const CategoriesManagement = () => {
     }
   };
   
+  // Add a function to handle Excel export
+  const handleExportToExcel = () => {
+    try {
+      OrderService.exportCategoriesToExcel(categories);
+      setSuccessMessage('Categories exported to Excel successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error exporting categories:', error);
+      setError('Failed to export categories. Please try again.');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+  
+  // Check if handleAddCategory function exists, otherwise add it
+  const handleAddCategory = () => {
+    setFormData(initialFormData);
+    setIsEditMode(false);
+    setDialogOpen(true);
+  };
+  
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
@@ -261,15 +284,26 @@ const CategoriesManagement = () => {
           <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
             Categories Management
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={handleAddClick}
-            sx={{ borderRadius: 2, textTransform: 'none' }}
-          >
-            Add Category
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExportToExcel}
+              sx={{ borderRadius: 2 }}
+            >
+              Export to Excel
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleAddCategory}
+              sx={{ borderRadius: 2 }}
+            >
+              Add Category
+            </Button>
+          </Box>
         </Box>
         
         {alertMessage && (
@@ -379,7 +413,7 @@ const CategoriesManagement = () => {
                         variant="contained"
                         color="primary"
                         startIcon={<AddIcon />}
-                        onClick={handleAddClick}
+                        onClick={handleAddCategory}
                         sx={{ mt: 2 }}
                       >
                         Add Category

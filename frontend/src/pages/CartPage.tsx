@@ -19,6 +19,13 @@ import {
   ListItem,
   ListItemText,
   Alert,
+  Snackbar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -30,12 +37,20 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import OrderService from '../utils/OrderService';
+import { alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
-  const { isAuthenticated } = useAuth() || { isAuthenticated: false };
+  const { cart, updateQuantity, removeFromCart, clearCart, error: cartError, total, itemCount } = useCart();
+  const { isAuthenticated, user } = useAuth() || { isAuthenticated: false, user: null };
   const [error, setError] = useState<string | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [orderNumber, setOrderNumber] = useState('');
+  const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
+  const theme = useTheme();
 
   const handleUpdateQuantity = (id: string, currentQty: number, change: number) => {
     const newQty = currentQty + change;
@@ -68,16 +83,53 @@ const CartPage = () => {
     return subtotal + shipping + tax;
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!isAuthenticated) {
       setError('Please sign in to checkout');
       setTimeout(() => setError(null), 5000);
       return;
     }
-    // In a real app, you would navigate to checkout page
-    // For now, we'll just clear the cart and show a success message
-    clearCart();
-    alert('Order placed successfully! This is a demo, so we have cleared your cart.');
+    setCheckoutDialogOpen(true);
+  };
+
+  const confirmCheckout = async () => {
+    try {
+      setIsCheckingOut(true);
+      setCheckoutDialogOpen(false);
+      
+      // Create mock shipping address (in a real app, you'd collect this from the user)
+      const shippingAddress = {
+        street: '123 Main St',
+        city: 'New York',
+        postalCode: '10001',
+        country: 'USA'
+      };
+      
+      // Create the order
+      const order = await OrderService.createOrder(
+        cart,
+        calculateTotal(),
+        shippingAddress,
+        user?.id || 'guest',
+        user?.name,
+        user?.email
+      );
+      
+      // Show success message
+      setOrderNumber(order.orderNumber);
+      setShowSuccessAlert(true);
+      
+      // Clear the cart
+      clearCart();
+      
+      // Reset checkout state
+      setIsCheckingOut(false);
+    } catch (error) {
+      console.error('Error during checkout:', error);
+      setIsCheckingOut(false);
+      setError('Error processing your order. Please try again.');
+      setTimeout(() => setError(null), 5000);
+    }
   };
 
   return (
@@ -104,13 +156,13 @@ const CartPage = () => {
           Your Cart
         </Typography>
 
-        {error && (
+        {(error || cartError) && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
+            {error || cartError}
           </Alert>
         )}
 
-        {cart?.length === 0 ? (
+        {!cart || cart.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" gutterBottom>
               Your cart is empty
@@ -134,7 +186,7 @@ const CartPage = () => {
             <Grid item xs={12} md={8}>
               <Card>
                 <List disablePadding>
-                  {cart?.map((item, index) => (
+                  {cart.map((item, index) => (
                     <Box key={item.id}>
                       <ListItem sx={{ py: 3, px: 2 }}>
                         <Grid container spacing={2} alignItems="center">
@@ -280,11 +332,20 @@ const CartPage = () => {
                     variant="contained"
                     color="primary"
                     fullWidth
-                    size="large"
-                    sx={{ mt: 3 }}
+                    disabled={cart.length === 0 || isCheckingOut}
                     onClick={handleCheckout}
+                    startIcon={isCheckingOut ? <CircularProgress size={24} color="inherit" /> : null}
+                    sx={{
+                      py: 1.5,
+                      fontWeight: 600,
+                      fontSize: '1rem',
+                      boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                      position: 'relative',
+                      overflow: 'hidden',
+                      backgroundImage: `linear-gradient(120deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                    }}
                   >
-                    Checkout
+                    {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
                   </Button>
                   {!isAuthenticated && (
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
@@ -297,6 +358,40 @@ const CartPage = () => {
           </Grid>
         )}
       </Container>
+      <Snackbar 
+        open={showSuccessAlert} 
+        autoHideDuration={6000} 
+        onClose={() => setShowSuccessAlert(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={() => setShowSuccessAlert(false)} 
+          severity="success" 
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          Order #{orderNumber} placed successfully!
+        </Alert>
+      </Snackbar>
+      <Dialog
+        open={checkoutDialogOpen}
+        onClose={() => setCheckoutDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Order</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to place this order for ${calculateTotal().toFixed(2)}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCheckoutDialogOpen(false)} color="inherit">
+            Cancel
+          </Button>
+          <Button onClick={confirmCheckout} color="primary" variant="contained" autoFocus>
+            Confirm Order
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

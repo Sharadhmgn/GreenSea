@@ -37,10 +37,12 @@ import {
   Clear as ClearIcon,
   Photo as PhotoIcon,
   Check as CheckIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  FileDownload as FileDownloadIcon
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
+import OrderService from '../../utils/OrderService';
 
 // Types
 interface Product {
@@ -111,86 +113,30 @@ const ProductsManagement = () => {
       try {
         setLoading(true);
         
-        // In a real application, you would fetch this data from your API
-        // For now, we'll use placeholder data
+        // Build query parameters for filtering
+        const queryParams: any = {};
         
-        // Mock API call for categories
-        // const categoriesResponse = await api.get('/categories');
-        const categoriesData: Category[] = [
-          { _id: '1', name: 'Fresh Fish', icon: 'fish', color: '#1a5f7a' },
-          { _id: '2', name: 'Shellfish', icon: 'set_meal', color: '#ff8a00' },
-          { _id: '3', name: 'Organic Vegetables', icon: 'eco', color: '#2e7d32' },
-          { _id: '4', name: 'Prepared Meals', icon: 'restaurant', color: '#9c27b0' }
-        ];
+        if (filterOptions.category) {
+          queryParams.categories = filterOptions.category;
+        }
         
-        // Mock API call for products
-        // const productsResponse = await api.get('/products', { params: { ...filterParams, search: searchQuery, page, limit: rowsPerPage } });
-        const productsData: Product[] = [
-          {
-            _id: '1',
-            name: 'Fresh Atlantic Salmon',
-            description: 'Premium quality salmon fillet, perfect for grilling or baking',
-            price: 15.99,
-            category: { _id: '1', name: 'Fresh Fish' },
-            countInStock: 25,
-            isFeatured: true,
-            dateCreated: '2023-05-15T08:30:00Z'
-          },
-          {
-            _id: '2',
-            name: 'Jumbo Shrimp',
-            description: 'Large wild-caught shrimp, peeled and deveined',
-            price: 19.99,
-            category: { _id: '2', name: 'Shellfish' },
-            countInStock: 32,
-            isFeatured: true,
-            dateCreated: '2023-05-18T09:45:00Z'
-          },
-          {
-            _id: '3',
-            name: 'Organic Kale',
-            description: 'Locally grown organic kale, freshly harvested',
-            price: 3.99,
-            category: { _id: '3', name: 'Organic Vegetables' },
-            countInStock: 45,
-            isFeatured: false,
-            dateCreated: '2023-05-20T10:15:00Z'
-          },
-          {
-            _id: '4',
-            name: 'Seafood Paella Kit',
-            description: 'All ingredients prepared for an authentic seafood paella',
-            price: 29.99,
-            category: { _id: '4', name: 'Prepared Meals' },
-            countInStock: 8,
-            isFeatured: true,
-            dateCreated: '2023-05-22T14:20:00Z'
-          },
-          {
-            _id: '5',
-            name: 'Wild Cod Fillets',
-            description: 'Sustainably caught cod fillets, skinless and boneless',
-            price: 12.99,
-            category: { _id: '1', name: 'Fresh Fish' },
-            countInStock: 18,
-            isFeatured: false,
-            dateCreated: '2023-05-25T11:10:00Z'
-          },
-          {
-            _id: '6',
-            name: 'Organic Bell Peppers',
-            description: 'Organic mixed bell peppers - red, yellow, and green',
-            price: 4.99,
-            category: { _id: '3', name: 'Organic Vegetables' },
-            countInStock: 0,
-            isFeatured: false,
-            dateCreated: '2023-05-26T15:30:00Z'
-          }
-        ];
+        if (filterOptions.featured) {
+          queryParams.featured = filterOptions.featured === 'true';
+        }
         
-        setCategories(categoriesData);
-        setProducts(productsData);
-        setTotalProducts(productsData.length);
+        if (searchQuery) {
+          queryParams.search = searchQuery;
+        }
+        
+        // Fetch categories from API
+        const categoriesResponse = await api.get('/categories');
+        
+        // Fetch products from API with filters
+        const productsResponse = await api.get('/products', { params: queryParams });
+        
+        setCategories(categoriesResponse.data);
+        setProducts(productsResponse.data);
+        setTotalProducts(productsResponse.data.length);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -254,11 +200,8 @@ const ProductsManagement = () => {
     setDeleteInProgress(true);
     
     try {
-      // In a real app, this would make an API call
-      // await api.delete(`/products/${selectedProduct._id}`);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Make API call to delete the product
+      await api.delete(`/products/${selectedProduct._id}`);
       
       // Update local state
       setProducts(products.filter(p => p._id !== selectedProduct._id));
@@ -296,6 +239,19 @@ const ProductsManagement = () => {
     });
   };
   
+  // Add a function to handle Excel export
+  const handleExportToExcel = () => {
+    try {
+      OrderService.exportProductsToExcel(products);
+      setSuccessMessage('Products exported to Excel successfully!');
+      setTimeout(() => setSuccessMessage(''), 3000);
+    } catch (error) {
+      console.error('Error exporting products:', error);
+      setError('Failed to export products. Please try again.');
+      setTimeout(() => setError(''), 3000);
+    }
+  };
+  
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
@@ -308,22 +264,33 @@ const ProductsManagement = () => {
     <Container maxWidth="xl">
       <Box sx={{ mb: 4, mt: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
+          <Typography variant="h4" component="h1" fontWeight="bold">
             Products Management
           </Typography>
-          <Button
-            component={RouterLink}
-            to="/admin/products/new"
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            sx={{ 
-              borderRadius: 2,
-              textTransform: 'none',
-            }}
-          >
-            Add New Product
-          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExportToExcel}
+              sx={{ borderRadius: 2 }}
+            >
+              Export to Excel
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              component={RouterLink}
+              to="/admin/products/new"
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+              }}
+            >
+              Add New Product
+            </Button>
+          </Box>
         </Box>
         
         {successMessage && (

@@ -1,6 +1,6 @@
 import axios from 'axios';
-
-// Create an axios instance with a base URL
+// Define base API URL - adjust based on your deployment environment
+// const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 const api = axios.create({
   baseURL: 'http://localhost:8080/api',
   headers: {
@@ -11,34 +11,53 @@ const api = axios.create({
   withCredentials: false  // Set to false since we're using token-based auth
 });
 
-// Request interceptor for adding auth token
+// Request interceptor - add auth token to requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Response interceptor for handling errors
+// Response interceptor - handle common errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error);
-    
-    // Handle 401 Unauthorized errors
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      // You could also redirect to login page here if needed
-    }
-    
-    // Log additional info for CORS or network errors
-    if (error.message === 'Network Error') {
-      console.error('Network or CORS error. Check if the backend server is running and CORS is properly configured.');
+    // Handle specific error status codes
+    if (error.response) {
+      const { status } = error.response;
+      
+      // Handle 401 Unauthorized (expired token or not logged in)
+      if (status === 401) {
+        // Clear token and redirect to login if needed
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        
+        // You could redirect to login here, or handle this in your components
+        // window.location.href = '/login';
+      }
+      
+      // Handle 403 Forbidden (not enough permissions)
+      if (status === 403) {
+        console.error('Permission denied');
+      }
+      
+      // Handle 500 Server Error
+      if (status >= 500) {
+        console.error('Server error occurred');
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('Network error - no response received');
+    } else {
+      // Something happened in setting up the request
+      console.error('Error setting up request:', error.message);
     }
     
     return Promise.reject(error);

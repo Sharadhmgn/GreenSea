@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import axios from 'axios';
 import api from '../utils/api';
 
@@ -112,6 +112,9 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 // Create context
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+// Session timeout in milliseconds (30 minutes)
+const SESSION_TIMEOUT = 30 * 60 * 1000;
+
 // Auth provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Load auth from localStorage
@@ -137,6 +140,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return initialState;
     }
   });
+  
+  // Session timeout timer reference
+  const sessionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Function to reset session timeout
+  const resetSessionTimeout = () => {
+    // Clear existing timeout
+    if (sessionTimeoutRef.current) {
+      clearTimeout(sessionTimeoutRef.current);
+    }
+    
+    // Skip timeout for admin users
+    if (state.user?.isAdmin) {
+      return;
+    }
+    
+    // Set new timeout
+    if (state.isAuthenticated) {
+      sessionTimeoutRef.current = setTimeout(() => {
+        console.log('Session timeout - logging out user');
+        dispatch({ type: 'LOGOUT' });
+      }, SESSION_TIMEOUT);
+    }
+  };
+  
+  // Set up event listeners for user activity
+  useEffect(() => {
+    const userActivity = () => {
+      resetSessionTimeout();
+    };
+    
+    // Add event listeners
+    window.addEventListener('mousemove', userActivity);
+    window.addEventListener('keydown', userActivity);
+    window.addEventListener('click', userActivity);
+    window.addEventListener('scroll', userActivity);
+    window.addEventListener('touchstart', userActivity);
+    
+    // Initial timeout setup
+    resetSessionTimeout();
+    
+    // Cleanup function
+    return () => {
+      if (sessionTimeoutRef.current) {
+        clearTimeout(sessionTimeoutRef.current);
+      }
+      window.removeEventListener('mousemove', userActivity);
+      window.removeEventListener('keydown', userActivity);
+      window.removeEventListener('click', userActivity);
+      window.removeEventListener('scroll', userActivity);
+      window.removeEventListener('touchstart', userActivity);
+    };
+  }, [state.isAuthenticated, state.user?.isAdmin]);
   
   // Set axios auth header when token changes
   useEffect(() => {
