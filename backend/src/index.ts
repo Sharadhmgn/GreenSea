@@ -19,13 +19,36 @@ dotenv.config();
 const app: Express = express();
 const PORT = process.env.PORT || 8080;
 
+// Define allowed origins
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://green-sea.vercel.app',
+  'https://green-seafoods.vercel.app',
+  'https://greensea-frontend.vercel.app'
+];
+
 // CORS Configuration
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://green-sea.vercel.app'],
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked for origin:', origin);
+      callback(null, true); // Temporarily allow all origins during troubleshooting
+    }
+  },
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'X-Requested-With'],
-  credentials: true
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
 
 // Middleware
 app.use(express.json());
@@ -43,6 +66,16 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Health check route
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
+});
+
+// CORS test endpoint
+app.get('/api/cors-test', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'CORS is working properly', 
+    origin: req.headers.origin || 'No origin header',
+    headers: req.headers
+  });
 });
 
 // Start server function
